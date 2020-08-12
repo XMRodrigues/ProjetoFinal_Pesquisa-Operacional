@@ -2,8 +2,7 @@ from leitura_de_arquivos import processamento_dos_dados
 import gurobipy as gp
 from gurobipy import GRB
 
-def main():
-
+try:
     rj,dj,pj,wj = processamento_dos_dados('random_instance.txt')
     
     m = gp.Model("mip1")
@@ -73,7 +72,6 @@ def main():
         else:
             LinExpr.add(ordem[i], 1)
             m.addConstr(LinExpr == 1, 'Re'+str(i))
-
         i+=1
         j=i
         aux=i
@@ -114,15 +112,19 @@ def main():
         m.addConstr(var_atrasos[i] >= var_terminos[i] - pj[i-1], 'a'+str(i))
         m.addConstr(var_atrasos[i] >= 0, 'ca'+str(i))
         i+=1
+    
+    i = 1
+    el = gp.LinExpr()
+    while(i <= len(rj)):
+        el.add(var_atrasos[i], wj[i-1])
+        i+=1
+    m.setObjective(el, GRB.MINIMIZE)
 
     #CRIAÇÃO DAS RESTRIÇÕES DE TÉRMINOS Yj >= Yi + dj - ((1 - Xij)M)
     i = 1
     j = 0
     cont = 0
     bigM = 1e10
-    
-    
-
 
     while(i <= len(rj)):
         aux = i-1
@@ -137,19 +139,13 @@ def main():
                 j+=1
         i+=1
     
-    i = 1
-    el = gp.LinExpr()
-    while(i <= len(rj)):
-        el.add(var_atrasos[i], wj[i-1])
-        i+=1
-    m.setObjective(el, GRB.MINIMIZE)
+    
     m.optimize()
     print(m.display())
     
+except gp.GurobiError as e:
+    print('Error code ' + str(e.errno) + ': ' + str(e))
 
-
-
-
+except AttributeError:
+    print('Encountered an attribute error')
     
-if __name__ == "__main__": 
-    main()
