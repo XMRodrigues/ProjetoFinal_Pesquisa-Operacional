@@ -7,14 +7,15 @@ try:
     
     m = gp.Model("mip1")
 
-    print(rj)
-    print(dj)
-    print(pj)
-    print(wj)
+    print('rj:',rj)
+    print('dj:',dj)
+    print('pj:',pj)
+    print('wj:',wj)
 
     var_atrasos = []
     var_terminos = []
     ordem = []
+    volta_fantasma = []
     infinity = GRB.INFINITY
 
     
@@ -33,22 +34,34 @@ try:
     del LinExpr
 
     i = 1
-    j = 1
+    j = 0
     while(i <= len(rj)): #Criação dos nós das tarefas
+        LinExpr = gp.LinExpr()
         while(j <= len(rj)):
             if(i != j):
-                decisao_ordem = m.addVar(vtype=GRB.BINARY, name='x'+str(i)+str(j))
-                ordem.append(decisao_ordem)
+                if(j==0):
+                    volta = m.addVar(vtype=GRB.BINARY, name='x'+str(i)+str(j))
+                    LinExpr.add(volta, 1)
+                    volta_fantasma.append(volta)
+                else:
+                    decisao_ordem = m.addVar(vtype=GRB.BINARY, name='x'+str(i)+str(j))
+                    ordem.append(decisao_ordem)
             j+=1
         aux=0
-        LinExpr = gp.LinExpr()
         while(aux < len(rj)-1):
             LinExpr.add(ordem[-(len(rj)-1):][aux], 1)
             aux+=1
         m.addConstr(LinExpr == 1, 'Rs'+str(i)) #Restrição do somatório das saídas em um nó de tarefas == 1
         del LinExpr
-        j=1
+        j=0
         i+=1
+
+    LinExpr = gp.LinExpr() 
+    cont=0
+    while(cont < len(volta_fantasma)):
+        LinExpr.add(volta_fantasma[cont], 1) #RESTRIÇÕES DE VOLTA PARA O NÓ FANTASMA
+        cont+=1
+    m.addConstr(LinExpr == 1, 'Re0')
     
     i = 1                     
     j = 1
@@ -77,6 +90,7 @@ try:
         aux=i
         del arrayProvisorio
         del LinExpr
+        
     
         
     #CRIAÇÃO DAS VARIÁVEIS INTEIRAS QUE DEFINEM AS RESTRIÇÕES DE TÉRMINO 
@@ -96,7 +110,6 @@ try:
         atraso.vType = GRB.INTEGER
         var_atrasos.append(atraso)
         i+=1
-
     #CRIAÇÃO DAS RESTRIÇÕES DE TÉRMINO
     i = 1
     m.addConstr(var_terminos[0] == 0, 'y0')
@@ -124,7 +137,7 @@ try:
     i = 1
     j = 0
     cont = 0
-    bigM = 1e10
+    bigM = 1e5
 
     while(i <= len(rj)):
         aux = i-1
@@ -140,9 +153,17 @@ try:
         i+=1
     
     
+    
     m.optimize()
     print(m.display())
+    for v in m.getVars():
+        if(v.x!=0):
+            print('%s %g' % (v.varName, v.x))
     
+    print('Obj: %g' % m.objVal)
+    print(var_atrasos)
+    print(var_terminos)
+
 except gp.GurobiError as e:
     print('Error code ' + str(e.errno) + ': ' + str(e))
 
