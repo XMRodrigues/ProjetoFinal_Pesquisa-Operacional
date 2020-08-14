@@ -155,12 +155,44 @@ try:
     
     
     m.optimize()
-    print(m.display())
     #vars.sort(key=lambda y:y.X, reverse=True)
     #print(vars)
     
     print('Obj: %g' % m.objVal)
     
+    Grupos_Ordem = []
+    i = 1
+    arrayAux = []
+    for v in m.getVars():
+        if(v.varName[0]=='x'):
+            arrayAux.append(v)
+
+        if(len(arrayAux)!=0):
+            if(i == len(rj)):
+                Grupos_Ordem.append(arrayAux)
+                del arrayAux
+                arrayAux = []
+                i=1
+        
+        i+=1
+    ordemPrint = []
+    for i in Grupos_Ordem:
+        for j in i:
+            if(j.x == 1.0):
+                ordemPrint.append(j.varName[-1])
+                
+    i = 0
+    aux = 0
+    while(i < len(ordemPrint)):
+        if(aux>=len(ordemPrint)):
+            break
+        if(i==0):
+            print('Task Scheduling cicle: ', 0, end='')
+        print(' ->', ordemPrint[i], end='')
+        i=int(ordemPrint[i])
+        aux+=1
+
+#0 -> 5 -> 1 -> 6 -> 3 -> 2 -> 7 -> 4 -> 0
 
 except gp.GurobiError as e:
     print('Error code ' + str(e.errno) + ': ' + str(e))
