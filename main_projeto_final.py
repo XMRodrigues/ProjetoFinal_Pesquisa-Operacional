@@ -3,7 +3,7 @@ import gurobipy as gp
 from gurobipy import GRB
 
 try:
-    rj,dj,pj,wj = processamento_dos_dados('random_instance.txt')
+    rj,dj,pj,wj = processamento_dos_dados('instance.txt')
     
     m = gp.Model("mip1")
 
@@ -156,13 +156,11 @@ try:
     
     m.optimize()
     print(m.display())
-    for v in m.getVars():
-        if(v.x!=0):
-            print('%s %g' % (v.varName, v.x))
+    #vars.sort(key=lambda y:y.X, reverse=True)
+    #print(vars)
     
     print('Obj: %g' % m.objVal)
-    print(var_atrasos)
-    print(var_terminos)
+    
 
 except gp.GurobiError as e:
     print('Error code ' + str(e.errno) + ': ' + str(e))
