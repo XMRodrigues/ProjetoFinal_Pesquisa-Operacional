@@ -155,11 +155,9 @@ try:
     
     
     m.optimize()
-    #vars.sort(key=lambda y:y.X, reverse=True)
-    #print(vars)
-    
-    print('Obj: %g' % m.objVal)
-    
+    #print(m.display())
+   
+        
     Grupos_Ordem = []
     i = 1
     arrayAux = []
@@ -180,17 +178,33 @@ try:
         for j in i:
             if(j.x == 1.0):
                 ordemPrint.append(j.varName[-1])
+    del Grupos_Ordem
                 
     i = 0
     aux = 0
+    Grupos_Ordem = []
     while(i < len(ordemPrint)):
         if(aux>=len(ordemPrint)):
             break
         if(i==0):
-            print('Task Scheduling cicle: ', 0, end='')
+            print('Melhor ciclo escalonado de tarefas: ', 0, end='')
+            Grupos_Ordem.append(0)
         print(' ->', ordemPrint[i], end='')
+        Grupos_Ordem.append(ordemPrint[i])
         i=int(ordemPrint[i])
         aux+=1
+    print('')
+
+    
+    i=1
+    aux=1
+    while(i <= len(rj)):
+        print(str(i)+'ª Tarefa:', Grupos_Ordem[i], '| Dia ', aux, 'ao dia', aux+dj[int(Grupos_Ordem[i])-1]-1,'| Multa aplicada:', var_atrasos[int(Grupos_Ordem[i])].x*wj[int(Grupos_Ordem[i])-1], '|',
+        var_atrasos[int(Grupos_Ordem[i])].x, 'dias atrasados ( Multa por dia:', wj[int(Grupos_Ordem[i])-1], ')')
+        aux+=dj[int(Grupos_Ordem[i])-1]
+        i+=1
+    print('Multa Total: %g' % m.objVal)
+
 
 #0 -> 5 -> 1 -> 6 -> 3 -> 2 -> 7 -> 4 -> 0
 
